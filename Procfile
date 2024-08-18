@@ -1,0 +1,1 @@
+web: java -jar target/NutriTabAPIv0.0.1.jar

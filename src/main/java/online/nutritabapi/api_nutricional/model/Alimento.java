@@ -1,6 +1,5 @@
 package online.nutritabapi.api_nutricional.model;
 
-import org.bouncycastle.jcajce.provider.asymmetric.dsa.DSASigner.detDSA;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;

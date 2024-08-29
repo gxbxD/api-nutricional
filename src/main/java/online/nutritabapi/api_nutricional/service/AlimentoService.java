@@ -1,7 +1,13 @@
 package online.nutritabapi.api_nutricional.service;
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+
+import online.nutritabapi.api_nutricional.exceptions.AlimentoNotFoundException;
+import online.nutritabapi.api_nutricional.model.Alimento;
+import online.nutritabapi.api_nutricional.repository.AlimentoRepository;
 
 @Service
 public class AlimentoService {
@@ -14,6 +20,18 @@ public class AlimentoService {
     public AlimentoService(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
     }
+
+    private AlimentoRepository alimentoRepository;
+
+    public List<Alimento> pesquisarAlimentos(String nome) {
+            // Usa o método do repositório para buscar os alimentos
+            List<Alimento> alimentos = alimentoRepository.findByNomeContainingIgnoreCase(nome);
+            if (alimentos.isEmpty()) {
+            throw new AlimentoNotFoundException("Nenhum alimento encontrado com o nome: " + nome);
+        }
+
+        return alimentos;
+        }
 
     public String buscarAlimentoPorNome(String product_name_pt, int page) {
         // Limitar a 10 requisições por minuto

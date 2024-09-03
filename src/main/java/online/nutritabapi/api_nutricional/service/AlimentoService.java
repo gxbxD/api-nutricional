@@ -2,10 +2,10 @@ package online.nutritabapi.api_nutricional.service;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import online.nutritabapi.api_nutricional.exceptions.AlimentoNotFoundException;
 import online.nutritabapi.api_nutricional.model.Alimento;
 import online.nutritabapi.api_nutricional.repository.AlimentoRepository;
 
@@ -21,17 +21,18 @@ public class AlimentoService {
         this.restTemplate = restTemplate;
     }
 
-    private AlimentoRepository alimentoRepository;
+    @Autowired
+    private AlimentoRepository alimentoRepository; // Certifique-se de que está anotado com @Autowired
 
     public List<Alimento> pesquisarAlimentos(String nome) {
-            // Usa o método do repositório para buscar os alimentos
-            List<Alimento> alimentos = alimentoRepository.findByNomeContainingIgnoreCase(nome);
-            if (alimentos.isEmpty()) {
-            throw new AlimentoNotFoundException("Nenhum alimento encontrado com o nome: " + nome);
+        // Verificação adicional para garantir que o repositório não é nulo
+        if (alimentoRepository == null) {
+            throw new IllegalStateException("O repositório não foi injetado corretamente.");
         }
 
-        return alimentos;
-        }
+        // Lógica de pesquisa
+        return alimentoRepository.findByNomeContainingIgnoreCase(nome);
+    }
 
     public String buscarAlimentoPorNome(String product_name_pt, int page) {
         // Limitar a 10 requisições por minuto

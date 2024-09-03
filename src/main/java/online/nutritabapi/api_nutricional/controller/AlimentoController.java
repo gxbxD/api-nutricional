@@ -15,27 +15,60 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-@RequestMapping("/api/alimentos")
+@RequestMapping("/alimentos")
 @RestController
 public class AlimentoController {
 
     @Autowired
     private AlimentoService alimentoService;
 
+    @GetMapping("/external")
+    public ResponseEntity<String> buscarAlimentos(@RequestParam String product_name_pt, 
+                                                  @RequestParam(defaultValue = "1") int page) {
+        try {
+            // Validação básica dos parâmetros
+            if (product_name_pt == null || product_name_pt.isEmpty()) {
+                return ResponseEntity.badRequest().body("O nome do produto não pode estar vazio.");
+            }
+
+            String resultado = alimentoService.buscarAlimentoPorNome(product_name_pt, page);
+            return ResponseEntity.ok(resultado);
+
+        } catch (Exception e) {
+            // Logar o erro para investigar posteriormente
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                                 .body("Erro ao buscar alimentos: " + e.getMessage());
+        }
+    }
+
     @GetMapping("")
-    public String buscarAlimentos(@RequestParam String product_name_pt, @RequestParam(defaultValue = "1") int page) {
-        return alimentoService.buscarAlimentoPorNome(product_name_pt, page);
+public ResponseEntity<List<Alimento>> pesquisarAlimentos(@RequestParam String nome) {
+    if (nome == null || nome.isEmpty()) {
+        return ResponseEntity.badRequest().body(null);
     }
 
-    @GetMapping("/{nome}")
-    public ResponseEntity<List<Alimento>> pesquisarAlimentos(@RequestParam String nome) {
-        List<Alimento> alimentos = alimentoService.pesquisarAlimentos(nome);
-        return ResponseEntity.ok(alimentos);
+    List<Alimento> alimentos = alimentoService.pesquisarAlimentos(nome);
+
+    // Lança a exceção personalizada quando a lista está vazia
+    if (alimentos.isEmpty()) {
+        throw new AlimentoNotFoundException("Nenhum alimento encontrado com o nome: " + nome);
     }
 
-    @ExceptionHandler(AlimentoNotFoundException.class)
-    public ResponseEntity<String> handleAlimentoNotFoundException(AlimentoNotFoundException ex) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
-    }
+    return ResponseEntity.ok(alimentos);
+}
+
     
+
+   @ExceptionHandler(AlimentoNotFoundException.class)
+public ResponseEntity<String> handleAlimentoNotFoundException(AlimentoNotFoundException ex) {
+    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+}
+
+@ExceptionHandler(Exception.class)
+public ResponseEntity<String> handleGenericException(Exception ex) {
+    ex.printStackTrace();
+    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro inesperado: " + ex.getMessage());
+}
+
 }

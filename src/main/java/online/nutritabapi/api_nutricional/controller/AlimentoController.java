@@ -22,26 +22,6 @@ public class AlimentoController {
     @Autowired
     private AlimentoService alimentoService;
 
-    @GetMapping("/external")
-    public ResponseEntity<String> buscarAlimentos(@RequestParam String product_name_pt, 
-                                                  @RequestParam(defaultValue = "1") int page) {
-        try {
-            // Validação básica dos parâmetros
-            if (product_name_pt == null || product_name_pt.isEmpty()) {
-                return ResponseEntity.badRequest().body("O nome do produto não pode estar vazio.");
-            }
-
-            String resultado = alimentoService.buscarAlimentoPorNome(product_name_pt, page);
-            return ResponseEntity.ok(resultado);
-
-        } catch (Exception e) {
-            // Logar o erro para investigar posteriormente
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                                 .body("Erro ao buscar alimentos: " + e.getMessage());
-        }
-    }
-
     @GetMapping("")
 public ResponseEntity<List<Alimento>> pesquisarAlimentos(@RequestParam String nome) {
     if (nome == null || nome.isEmpty()) {
